@@ -1,5 +1,4 @@
 'use client'
-'use client'
 import { useState, useEffect } from 'react';
 
 const MinigameHub = () => {
@@ -69,11 +68,11 @@ const MinigameHub = () => {
         {/* Header */}
         <div className="text-center mb-16 animate-fade-in">
           <div className="flex items-center justify-center mb-6 hover:scale-105 transition-transform duration-300">
-            <div className="w-12 h-12 text-yellow-400 mr-4 text-4xl">👑</div>
+           
             <h1 className="text-6xl font-bold bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent">
-              ARCADE HUB
+              ARCADE 
             </h1>
-            <div className="w-12 h-12 text-yellow-400 ml-4 text-4xl">👑</div>
+       
           </div>
         </div>
 

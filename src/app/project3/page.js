@@ -1,20 +1,12 @@
-
-'use client'
 'use client'
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-
-
-// Mock Firebase functions for demo (replace with actual Firebase imports)
-const mockDb = {};
-const mockAddDoc = async () => ({ id: 'mock' });
-const mockGetDocs = async () => ({ forEach: () => {}, docs: [] });
-const mockCollection = () => ({});
-const mockQuery = () => ({});
-const mockOrderBy = () => ({});
-const mockLimit = () => ({});
+import { useRouter } from 'next/navigation';
+import { db } from '../firebase-config'; // Assuming your Firebase config is here
+import { collection, addDoc, getDocs, query, orderBy, limit } from 'firebase/firestore';
 
 const CursorSurvivalGame = () => {
+  const router = useRouter();
   const [gameOver, setGameOver] = useState(false);
   const [lives, setLives] = useState(3);
   const [score, setScore] = useState(0);
@@ -31,15 +23,15 @@ const CursorSurvivalGame = () => {
   const borderAttackLoopRef = useRef(null);
   const difficultyUpdateRef = useRef(null);
   
-  // Handle back button navigation
+  // Handle back button navigation using Next.js router
   const handleBackToHub = () => {
     // Clean up intervals before navigating
     clearInterval(gameLoopRef.current);
     clearInterval(borderAttackLoopRef.current);
     clearInterval(difficultyUpdateRef.current);
     
-    // Navigate to hub (in a real app, you'd use Next.js router or similar)
-    window.location.href = '/hub';
+    // Navigate to base landing page using Next.js router
+    router.push('/');
   };
   
   // Track player cursor position and detect if they leave the game area
@@ -185,31 +177,42 @@ const CursorSurvivalGame = () => {
     clearInterval(difficultyUpdateRef.current);
     
     try {
-      await mockAddDoc().catch(error => {
-        console.error("Error saving high score:", error);
+      // Save score to Firebase
+      await addDoc(collection(db, 'highScores'), {
+        score: score,
+        timestamp: new Date(),
+        difficulty: Math.floor(difficulty)
       });
       
+      // Reload high scores after saving
+      await loadHighScores();
+      
       setTimeout(() => {
-        window.location.reload();
+        router.refresh(); // Use Next.js router refresh instead of window.location.reload()
       }, 3000);
     } catch (error) {
       console.error("Error saving high score:", error);
       setTimeout(() => {
-        window.location.reload();
+        router.refresh(); // Use Next.js router refresh instead of window.location.reload()
       }, 3000);
     }
   };
   
   const loadHighScores = async () => {
     try {
-      const querySnapshot = await mockGetDocs().catch(error => {
-        console.error("Error fetching high scores:", error);
-        return { docs: [] };
-      });
+      const q = query(
+        collection(db, 'highScores'), 
+        orderBy('score', 'desc'), 
+        limit(10)
+      );
+      const querySnapshot = await getDocs(q);
       
       const scores = [];
       querySnapshot.forEach((doc) => {
-        scores.push(doc.data());
+        scores.push({
+          id: doc.id,
+          ...doc.data()
+        });
       });
       
       setHighScores(scores);
@@ -405,10 +408,10 @@ const CursorSurvivalGame = () => {
         <h3 className="text-lg font-bold mb-2">High Scores</h3>
         {highScores.length > 0 ? (
           <ul>
-            {highScores.map((score, index) => (
-              <li key={index} className="flex justify-between">
+            {highScores.map((scoreEntry, index) => (
+              <li key={scoreEntry.id || index} className="flex justify-between">
                 <span>#{index + 1}</span>
-                <span className="ml-4">{score.score} sec</span>
+                <span className="ml-4">{scoreEntry.score} sec</span>
               </li>
             ))}
           </ul>

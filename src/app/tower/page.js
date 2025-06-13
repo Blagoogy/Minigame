@@ -1,6 +1,7 @@
 'use client'
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 
 const GAME_WIDTH = 800;
 const GAME_HEIGHT = 600;
@@ -10,6 +11,7 @@ const TOWER_DAMAGE = 25;
 const UPGRADE_COST = 75;
 
 const TowerDefenseGame = () => {
+  const router = useRouter();
   const [gameState, setGameState] = useState('playing'); // 'playing', 'gameOver'
   const [currency, setCurrency] = useState(100);
   const [score, setScore] = useState(0);
@@ -189,6 +191,10 @@ const TowerDefenseGame = () => {
     setSelectedTower(null);
   };
 
+  const handleBackToHub = () => {
+    router.push('/');
+  };
+
   const gameLoop = useCallback(() => {
     const now = Date.now();
 
@@ -321,10 +327,10 @@ const TowerDefenseGame = () => {
       setFinalScore(currentScore);
       setGameState('gameOver');
       setTimeout(() => {
-        window.location.reload();
+        router.push('/');
       }, 3000);
     }
-  }, [enemiesReached, gameState]);
+  }, [enemiesReached, gameState, router]);
 
   // Increase wave
   useEffect(() => {
@@ -394,7 +400,7 @@ const TowerDefenseGame = () => {
         >
           <h1 className="text-4xl font-bold mb-4">Game Over!</h1>
           <p className="text-2xl mb-2">Final Score: {finalScore}</p>
-          <p className="text-lg">Reloading in 3 seconds...</p>
+          <p className="text-lg">Returning to hub in 3 seconds...</p>
         </motion.div>
       </div>
     );
@@ -405,7 +411,7 @@ const TowerDefenseGame = () => {
       {/* Back to Hub Button */}
       <div className="absolute top-4 left-4 z-50">
         <button
-          onClick={() => window.location.href = '/hub'}
+          onClick={handleBackToHub}
           className="flex items-center gap-2 px-4 py-2 bg-white bg-opacity-90 hover:bg-opacity-100 border border-gray-300 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 text-gray-700 hover:text-gray-900"
         >
           <svg 
